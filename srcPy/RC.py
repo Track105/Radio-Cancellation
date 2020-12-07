@@ -6,14 +6,6 @@ from tqdm import tqdm
 
 filter_ords = [16, 32, 64, 128, 256]
 alphas = [0.001, 0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3]
-# command_path = '../FastTestFiles/command.wav'
-# music_path = '../FastTestFiles/radio_music.wav'
-# combined_path = '../FastTestFiles/combined.wav'
-# error_path = '../FastTestFiles/error_nlms.wav'
-# path_music = "../TestFiles/music/"
-# path_command = "../TestFiles/commands/"
-# path_error = "../TestFiles/errors/"
-# path_combined = "../TestFiles/combined/"
 
 music_path = "../TestFilesRC/radio2_5min.wav"
 music_command_filtered_path = "../TestFilesRC/combined_echo.wav"
@@ -82,8 +74,8 @@ def nlms_rc(x, d, L, alpha, delta):
         voice[n] = d[n] - m_est[n]
                 
         step = alpha / (pwr + delta)
-        if n < 32000 or (n >= 32000 and np.abs(voice[n]) < 0.0005):
-            h_est = h_est + step * e[n] * xn
+        # if n < 32000 or (n >= 32000 and np.abs(voice[n]) < 0.0005):
+        h_est = h_est + step * e[n] * xn
             
     return -e, voice
 
@@ -156,9 +148,6 @@ def compute_all_files_nlms(path_music, path_command, path_combined, path_error, 
 # x, music = create_far_end_signal(command, music, Constants.k, Constants.MVR)
 # wf.write(filename=combined_path, rate=Constants.sr, data=x)
 # list_scores, Constants.alpha, Constants.filter_length = find_best_coeffs(command, music, x, Constants.delta, Constants.lamb, Constants.k)
-
-# sr, x = wf.read(filename="/home/apopa/Downloads/radio2_5min.wav")
-# sr, x_filt = wf.read(filename="/home/apopa/Downloads/combined_echo.wav")
 
 # e_nlms = nlms(x, music, 64, 0.125, Constants.delta, Constants.lamb)
 # wf.write(filename=error_path, rate=Constants.sr, data=e_nlms)

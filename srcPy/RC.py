@@ -55,11 +55,9 @@ def nlms_rc(x, d, L, alpha, delta):
     N = len(x)
     e = np.zeros(N)
     y_est = np.zeros(N)
-    m_est = np.zeros(N)
     voice = np.zeros(N)
     h_est = np.zeros(L)
     xn = np.zeros(L)
-    mn = np.zeros(L)
     pwr = 0
 
     for n in tqdm(range(0, N)):
@@ -68,16 +66,12 @@ def nlms_rc(x, d, L, alpha, delta):
         xn = np.concatenate(([x[n]], xn[0:L - 1]))    
         y_est[n] = np.dot(xn, h_est)
         e[n] = d[n] - y_est[n]
-               
-        mn = np.concatenate(([x[n]], mn[0:L - 1]))     
-        m_est[n] = np.dot(mn, h_est)
-        voice[n] = d[n] - m_est[n]
                 
         step = alpha / (pwr + delta)
-        # if n < 32000 or (n >= 32000 and np.abs(voice[n]) < 0.0005):
-        h_est = h_est + step * e[n] * xn
+        if n < 32000 or (n >= 32000 and np.abs(e[n]) < 0.0005):
+        	h_est = h_est + step * e[n] * xn
             
-    return -e, voice
+    return -e
 
 def read_signals(command_path, music_path):
     
@@ -143,19 +137,10 @@ def compute_all_files_nlms(path_music, path_command, path_combined, path_error, 
             e_nlms = nlms(x, music, Constants.filter_length, Constants.alpha, Constants.delta, Constants.lamb)
             wf.write(filename=path_error + str(i + 1) + "_MVR_" + str(MVR) + "_alpha_" + str(Constants.alpha) + "_ord_" + str(Constants.filter_length) + ".wav", rate=Constants.sr, data=e_nlms)
 
-# command, music = read_signals(command_path, music_path)
-# start = len(command)
-# x, music = create_far_end_signal(command, music, Constants.k, Constants.MVR)
-# wf.write(filename=combined_path, rate=Constants.sr, data=x)
-# list_scores, Constants.alpha, Constants.filter_length = find_best_coeffs(command, music, x, Constants.delta, Constants.lamb, Constants.k)
-
-# e_nlms = nlms(x, music, 64, 0.125, Constants.delta, Constants.lamb)
-# wf.write(filename=error_path, rate=Constants.sr, data=e_nlms)
-
 sr, x = wf.read(filename=music_path)
 sr, x_filt = wf.read(filename=music_command_filtered_path)
 
-e_nlms_rc, voice = nlms_rc(x, x_filt, 64, 0.6, 0.00000001)
+voice = nlms_rc(x, x_filt, 64, 0.6, 0.0001)
 wf.write(filename=recovered_command_path, rate=Constants.sr, data=voice)
 
 
